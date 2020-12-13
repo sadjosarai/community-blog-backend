@@ -8,34 +8,6 @@ from .serializers import CategorySerializer, TagSerializer, PostSerializer
 from django.contrib.auth.models import User
 from rest_framework import status
 
-
-# def create(self, request):
-#     data = request.data
-#     tags = []
-
-#     for tag in data['tag']:
-#         tag_obj = Tag.objects.get(title=tag['title'])
-#         tags.add(tag_obj)
-    
-#     try:
-#         category = Category.objects.get()
-#     except Category.DoesNotExist:
-#         return HttpResponse(status=404)
-
-#     post = Post.objects.create(
-#                 title=data['title'],
-#                 user=request.user,
-#                 description=data['description'],
-#                 body=data['body'],
-#                 tags=tags,
-#                 category=category,
-#                 banner=data['banner'],
-#             )
-#     post.save()
-#     serializer = PostSerializer(post)
-
-#     return Response(serializer.data)
-
 @api_view(['GET', 'POST'])
 def post_list(request):
     if request.method == 'GET':
@@ -49,6 +21,7 @@ def post_list(request):
             serializer.save()
             return Response(serializer.data, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def post_detail(request, pk):
@@ -64,13 +37,34 @@ def post_detail(request, pk):
     elif request.method == 'PUT':
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            data = request.data
+            try:
+                category = Category.objects.get(id=data['category'])
+            except Category.DoesNotExist:
+                return HttpResponse(status=404)
+
+            tags = []
+            for tag in data['tag']:
+                try:
+                    tags.append(Tag.objects.get(id=tag))
+                except Tag.DoesNotExist:
+                    return HttpResponse(status=404)
+
+            data = request.data
+            post.title = data["title"]
+            post.description = data["description"]
+            post.body = data["body"]
+            post.banner = data["banner"]
+            post.tag.set(tags)
+            post.category = category
+
+            post.save()
             return Response(serializer.data)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
         post.delete()
-        return Response(serializer.data, status = status.HTTP_204_NO_CONTENT)
+        return Response(status = status.HTTP_204_NO_CONTENT)
         
 @api_view(['GET'])
 def post_list_user(request, pk):
@@ -101,7 +95,7 @@ def post_list_tag(request, pk):
     except User.DoesNotExist:
         return HttpResponse(status=404)
     
-    posts = Post.objects.filter(tags=tag).order_by('-created_at')
+    posts = Post.objects.filter(tag=tag).order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
@@ -140,7 +134,7 @@ def category_detail(request, pk):
       
     elif request.method == 'DELETE':
         category.delete()
-        return Response(serializer.data, status = status.HTTP_204_NO_CONTENT)
+        return Response( status = status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
 def category_list_user(request, pk):
@@ -187,7 +181,7 @@ def tag_detail(request, pk):
     
     elif request.method == 'DELETE':
         tag.delete()
-        return Response(serializer.data, status = status.HTTP_204_NO_CONTENT)
+        return Response(status = status.HTTP_204_NO_CONTENT)
     
 @api_view(['GET'])
 def tag_list_user(request, pk):
@@ -197,5 +191,17 @@ def tag_list_user(request, pk):
         return HttpResponse(status=404)
     
     tags = Tag.objects.filter(user=user).order_by('-created_at')
+    serializer = TagSerializer(tags, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def tag_list_article(request, pk):
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return HttpResponse(status=404)
+    
+    tags = post.tag.all()
+    print (tags)           
     serializer = TagSerializer(tags, many=True)
     return Response(serializer.data)

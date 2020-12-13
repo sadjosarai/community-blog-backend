@@ -15,4 +15,6 @@ urlpatterns = [
     path('blog/tag/', views.tag_list),
     path('blog/tag/<int:pk>/', views.tag_detail),
     path('blog/tag/user/<int:pk>/', views.tag_list_user),
+
+    path('blog/tag/article/<int:pk>/', views.tag_list_article),
 ]

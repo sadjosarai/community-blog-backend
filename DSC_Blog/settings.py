@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+
     'account.apps.AccountConfig',
     'blog.apps.BlogConfig',
     'forum.apps.ForumConfig',
@@ -110,8 +113,11 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ],
 }
+REST_USE_JWT = True
 CORS_ORIGIN_ALLOW_ALL=True
 
 #CORS_ORIGIN_WHITELIST = [
