@@ -1,33 +1,28 @@
 from django.db import models
-from django.utils import timezone
 from django.contrib.auth.models import User
-from django.urls import reverse
 
 # Create your models here.
-class Article(models.Model):
-    STATUS_CHOICES = (
-        ('draft', 'Draft'),
-        ('published', 'Published'),
-    )
+class Category(models.Model):
+    user = models.ForeignKey(User ,related_name="categories", on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, null=False)
+    description = models.TextField(max_length=200, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    CATEGORY_CHOICES = (
-        ('mobile', 'Mobile'),
-        ('securite', 'Securite'),
-        ('web', 'Web'),
-        ('machinelearning', 'MachineLearning'),
-        ('datascience', 'DataScience'),
-    )
-    
-    title = models.CharField(max_length=255)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+class Tag(models.Model):
+    user = models.ForeignKey(User ,related_name="tags", on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Post(models.Model):
+    user = models.ForeignKey(User ,related_name="posts", on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, null=False)
+    banner = models.ImageField(upload_to='profiles/post/', null=True, blank=True)
+    description = models.TextField(max_length=200, null=False)
     body = models.TextField()
-    slug = models.SlugField(max_length=255,unique_for_date='publish')
-    publish = models.DateField(default = timezone.now)
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
-    status = models.CharField(max_length=50, choices = STATUS_CHOICES, default = 'draft')
-    category = models.CharField(max_length=255, choices = CATEGORY_CHOICES, default='web')
+    category = models.ForeignKey(Category, related_name="category", on_delete=models.CASCADE)
+    tag = models.ManyToManyField(Tag, related_name="tags")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    publish = models.DateTimeField(auto_now_add=True)
+    status = models.BooleanField(default=True)
     
-    
-    def __str__(self):
-        return self.title

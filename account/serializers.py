@@ -7,9 +7,12 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(required=True)
+    created_at = serializers.DateTimeField(required=False)
+
     class Meta:
         model = Profile
-        fields = ['photo', 'description', 'created_at']
+        fields = ['profile', 'description', 'created_at', 'phone']
         
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -79,8 +82,10 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['role'] = role
 
         try:
-            token['photo'] = user.profile.photo.url if user.profile.photo is not None else "null"
-            token['descrition'] = user.profile.description if user.profile.description is not None else "null"
+            token['profile'] = user.profile.photo.url if user.profile.photo is not None else "null"
+            token['phone'] = user.profile.phone if user.profile.phone is not None else "null"
+            token['descrition'] = user.profile.description
+            token['created_at'] = user.profile.created_at
         except Exception:
             token['profile'] = "null"
         

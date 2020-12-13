@@ -5,25 +5,37 @@ from rest_framework.response import Response
 from .models import Comment, ResponseComment
 from .serializers import ResponseCommentSerializer, CommentSerializer
 from rest_framework import status
+from rest_framework import generics
 
 # Create your views here.
 
-@api_view(['GET', 'POST'])
-def list_comment(request, post_id):
+class CommentList(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+#    permission_classes = [IsAdminUser]
+
+
+@api_view(['GET'])
+def list_comment_user(request, pk):
     try:
-        post = User.objects.get(pk=pk)
+        user = User.objects.get(pk=pk)
     except User.DoesNotExist:
         return HttpResponse(status=404)
 
-
     if request.method == 'GET':
-        
-        serializer = UserSerializer(users, many=True)
+        comment = Comment.objects.filter(user=user)
+        serializer = CommentSerializer(comment, many=True)
         return Response(serializer.data)
 
-    elif request.method == "POST":
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status = status.HTTP_201_CREATED)
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def list_comment_post(request, pk):
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == 'GET':
+        comment = Comment.objects.filter(post=post)
+        serializer = CommentSerializer(comment, many=True)
+        return Response(serializer.data)
