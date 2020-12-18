@@ -3,7 +3,7 @@ from rest_framework.serializers import (
         SerializerMethodField
     )
 from rest_framework import serializers 
-from .models import Post, Tag, Category, Formation, Lecon
+from .models import Post, Tag, Category, Formation, Lecon, Comment, ResponseComment
 from rest_framework.reverse import reverse
 from django.http import HttpRequest
 
@@ -32,7 +32,14 @@ class FormationDetailSerializer(serializers.ModelSerializer):
     user = SerializerMethodField()
     tag = SerializerMethodField()
     category = SerializerMethodField()
-    summary = SerializerMethodField()
+    lecon = SerializerMethodField()
+    summary = HyperlinkedRelatedField(
+        many=True,
+        read_only=True,
+        view_name='blog:detail_lecon',
+        lookup_field = 'pk',
+        lookup_url_kwarg = 'pk'
+    )
     
     class Meta:
         model = Formation
@@ -47,22 +54,19 @@ class FormationDetailSerializer(serializers.ModelSerializer):
                     'tag',
                     'prerequiste',
                     'objectif',
-                    'summary'
+                    'summary',
+                    'lecon',
                 )
 
-    def get_summary(self, obj):
-        lecons = obj.lecon_formation.all()
+    def get_lecon(self, obj):
+        lecons = obj.summary.all()
         lecons_param = []
-        for lecon in lecons:
-            try :
-                url = reverse("blog:detail_lecon", [lecon.pk])
-            except Exception:
-                url = None
-            lecons_param.append({
-                'url': url,
-                'title' : lecon.title,
-                'description': lecon.description
-            })
+        for i in range(len(lecons)):
+            item = {
+                "title": lecons[i].title,
+                "link": summary[i]
+            }
+            lecons_param.append(item)
         return lecons_param
 
     def get_user(self, obj):
@@ -142,11 +146,13 @@ class PostDetailSerializer(serializers.ModelSerializer):
     user = SerializerMethodField()
     tag = SerializerMethodField()
     category = SerializerMethodField()
+    user_id = SerializerMethodField()
     
     class Meta:
         model = Post
         fields = (
                     'id',
+                    'user_id',
                     'user',
                     'title',
                     'slug',
@@ -157,6 +163,10 @@ class PostDetailSerializer(serializers.ModelSerializer):
                     'body',
                     'tag',
                 )
+
+    def get_user_id(self, obj):
+        return int(obj.user.pk)
+
 
     def get_user(self, obj):
         return str(obj.user.username)
@@ -241,10 +251,19 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
 
     def get_posts(self, obj):
         posts = obj.posts_category.all()
-        posts_slug = []
+        posts_data = []
         for post in posts:
-            posts_slug.append(str(post.slug))
-        return posts_slug
+            item = {
+                    'id': post.pk,
+                    'user': post.user.username,
+                    'title': post.title,
+                    'slug': post.slug,
+                    'description':post.description, 
+                    'banner':post.banner,
+                    'publish_at':post.publish_at,
+                }
+            posts_data.append(item)
+        return posts_data
 
 class TagListSerializer(serializers.ModelSerializer):
     user = SerializerMethodField()
@@ -312,3 +331,104 @@ class LeconCreateSerializer(serializers.ModelSerializer):
                     'formation',
                     'updated_at',
                 )
+
+class PostCommentDetailSerializer(serializers.ModelSerializer):
+    user = SerializerMethodField()
+    comment = SerializerMethodField()
+    
+    class Meta:
+        model = Post
+        fields = (
+            'id',
+            'user',
+            'title',
+            'slug',
+            'description', 
+            'banner', 
+            'publish_at',
+            'body', 
+            'comment',
+        )
+    
+    def get_user(self, obj):
+        return str(obj.user.username)
+    
+    def get_comment(self, obj):
+        comments = obj.comments.all()
+        comments_data = []
+        for comment in comments:
+            responses = comment.responses.all()
+            responses_data = []
+            for response in responses:
+                itemres = {
+                        'name': response.user.username, 
+                        'created_at': response.created_at,
+                        'body': response.body
+                }
+                responses_data.append(itemres)
+            item = {
+                        'name': comment.user.username, 
+                        'created_at': comment.created_at,
+                        'body': comment.body,
+                        'response': responses_data,
+                    }
+            comments_data.append(item)
+        return comments_data
+
+class CommentCreateSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model = Comment
+        fields = (
+                    'user',
+                    'post',
+                    'created_at',
+                    'body',
+                )
+
+class ResponseCommentCreateSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model = ResponseComment
+        fields = (
+                    'created_at',
+                    'user',
+                    'comment',
+                    'body',
+                )
+
+class CommentDetailSerializer(serializers.ModelSerializer):
+    user = SerializerMethodField()
+    post_name = SerializerMethodField()
+    post_slug = SerializerMethodField() 
+    response = SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = (
+                    'user',
+                    'post_name',
+                    'post_slug',
+                    'created_at',
+                    'body',
+                    'response',
+                )
+    def get_user(self, obj):
+        return str(obj.user.username)
+
+    def get_post_name(self, obj):
+       return str(obj.post.title)
+
+    def get_post_slug(self, obj):
+       return str(obj.post.slug)
+
+    def get_response(self, obj):
+        responses = obj.responses.all()
+        responses_data = []
+        for response in responses:
+            item = {
+                    'name': response.user.username, 
+                    'created_at': response.created_at,
+                    'body': response.body
+            }
+            responses_data.append(item)
+        return responses_data
+

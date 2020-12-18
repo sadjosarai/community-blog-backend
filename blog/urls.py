@@ -5,6 +5,7 @@ from .views import (
     PostDeleteView,
     PostUpdateView,
     PostCreateView,
+    ListRecentPostView,
 
     TagListView, 
     TagDetailView,
@@ -25,15 +26,24 @@ from .views import (
 
     CategoryListView,
     CategoryDetailView,
+
+    PostCommentListView,
+
+    CommentCreateView,
+
+    ResponseCommentCreateView,
 )
 
 app_name = "blog"
 urlpatterns = [
     path('post/', PostListView.as_view(), name="list_all_post"),
     path('post/create/', PostCreateView.as_view(), name="create_post"),
+    path('post/recent/', ListRecentPostView.as_view(), name="recent_post"),
     path('post/<slug:slug>/', PostDetailView.as_view(), name="detail_post"),
     path('post/edit/<slug:slug>/', PostUpdateView.as_view(), name="edit_post"),
     path('post/delete/<slug:slug>/', PostDeleteView.as_view(), name="delete_post"),
+
+    path('post/comment/<slug:slug>/', PostCommentListView.as_view(), name = 'post_comment'),
 
     path('tag/', TagListView.as_view(), name="list_all_tag"),
     path('tag/create/', TagCreateView.as_view(), name="create_tag"),
@@ -55,4 +65,8 @@ urlpatterns = [
 
     path('category/', CategoryListView.as_view(), name="list_all_category"),
     path('category/<str:title>/', CategoryDetailView.as_view(), name="detail_category"),
+
+    path('comment/create/', CommentCreateView.as_view(), name="create_comment"),
+
+    path('responsecomment/create/', ResponseCommentCreateView.as_view(), name="create_responsecomment"),
 ]

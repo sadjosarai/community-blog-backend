@@ -18,3 +18,6 @@ class FormationLimitOffsetPagination(LimitOffsetPagination):
 
 class FormationPageNumberPagination(PageNumberPagination):
     page_size = 2
+
+class EventPageNumberPagination(PageNumberPagination):
+    page_size = 3

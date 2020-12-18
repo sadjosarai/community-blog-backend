@@ -1,5 +1,5 @@
 from django.db.models import Q
-from .models import Post, Category, Tag, Formation, Lecon
+from .models import Post, Category, Tag, Formation, Lecon, Comment, ResponseComment
 from utils.permissions import (
         IsOwnerOrReadOnly, 
         IsPublish, 
@@ -8,10 +8,10 @@ from utils.permissions import (
         IsAdminFormation
     )
 from utils.pagination import PostLimitOffsetPagination, PostPageNumberPagination
-from rest_framework.filters import (
+from rest_framework.filters import (    
     SearchFilter,
     OrderingFilter,
-)
+    )
 
 from rest_framework.generics import (
     ListAPIView,
@@ -20,14 +20,14 @@ from rest_framework.generics import (
     DestroyAPIView,
     CreateAPIView,
     RetrieveUpdateAPIView,
-)
+    )
 
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
     IsAdminUser,
     IsAuthenticatedOrReadOnly,
-)
+    )
 
 from .serializers import (  
     LeconDetailSerializer,
@@ -37,6 +37,7 @@ from .serializers import (
     PostDetailSerializer,
     PostCreateUpdateSerializer,
     PostCreateSerializer,
+    PostCommentDetailSerializer,
 
     CategoryListSerializer,
     CategoryDetailSerializer,
@@ -49,7 +50,11 @@ from .serializers import (
     FormationDetailSerializer,
     FormationCreateUpdateSerializer,
     FormationCreateSerializer,
-)
+
+    CommentCreateSerializer,
+
+    ResponseCommentCreateSerializer,
+    )
 
 class PostCreateView(CreateAPIView):
     queryset = Post.objects.all()
@@ -104,6 +109,10 @@ class PostListView(ListAPIView):
             ).distinct()
         return queryset_list
 
+class ListRecentPostView(ListAPIView):
+    serializer_class = PostDetailSerializer
+    queryset = Post.objects.all().order_by('publish_at')[:4]
+
 class CategoryListView(ListAPIView):
     serializer_class = CategoryListSerializer
     queryset = Category.objects.all()
@@ -111,8 +120,8 @@ class CategoryListView(ListAPIView):
 class CategoryDetailView(RetrieveAPIView):
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
-    lookup_field = 'slug'
-    lookup_url_kwarg = 'slug'
+    lookup_field = 'title'
+    lookup_url_kwarg = 'title'
 
 class TagListView(ListAPIView):
     serializer_class = TagListSerializer
@@ -121,8 +130,8 @@ class TagListView(ListAPIView):
 class TagDetailView(RetrieveAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagDetailSerializer
-    lookup_field = 'slug'
-    lookup_url_kwarg = 'slug'
+    lookup_field = 'title'
+    lookup_url_kwarg = 'title'
 
 class TagDeleteView(DestroyAPIView):
     queryset = Tag.objects.all()
@@ -232,3 +241,17 @@ class LeconCreateView(CreateAPIView):
     queryset = Lecon.objects.all()
     serializer_class = LeconCreateSerializer
     permission_classes = [IsAuthenticated, IsAdminUser, IsAdminFormation, IsNotPublish]
+
+class PostCommentListView(ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostCommentDetailSerializer
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
+
+class CommentCreateView(CreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentCreateSerializer
+
+class ResponseCommentCreateView(CreateAPIView):
+    queryset = ResponseComment.objects.all()
+    serializer_class = ResponseCommentCreateSerializer

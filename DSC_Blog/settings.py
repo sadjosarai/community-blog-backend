@@ -51,13 +51,18 @@ INSTALLED_APPS = [
     'django_filters',
     'blog.apps.BlogConfig',
     'accounts.apps.AccountsConfig',
+    'events.apps.EventsConfig',
+    'corsheaders',
 
 ]
 
+
+CORS_ORIGIN_ALLOW_ALL=True
 SITE_ID = 1
 REST_USE_JWT = True
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

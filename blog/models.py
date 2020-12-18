@@ -116,9 +116,10 @@ class  Lecon(models.Model):
     title = models.CharField(max_length=200, blank=False, unique=True)
     slug = models.SlugField(default='', editable=False, max_length=200, unique=True)
     banner = models.URLField(max_length=200, blank=True)
-    description = models.TextField(max_length=200, blank=False)
+    durate = models.TimeField(auto_now=False, auto_now_add=False)
+    position = models.IntegerField()
     body = models.TextField(blank=False)
-    formation = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name="lecon_formation", blank=False)
+    formation = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name="summary", blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -133,3 +134,16 @@ class  Lecon(models.Model):
         value = self.title
         self.slug = slugify(value, allow_unicode=True)
         super().save(*args, **kwargs)
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(User, related_name="user_comments", on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
+    body = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ResponseComment(models.Model):
+    user = models.ForeignKey(User, related_name="userresponse", on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, related_name="responses", on_delete=models.CASCADE)
+    body = models.TextField(max_length=500)
+    created_at = models.DateField(auto_now_add=True)

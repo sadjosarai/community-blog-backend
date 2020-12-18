@@ -1,6 +1,6 @@
 from rest_framework.generics import (ListCreateAPIView,RetrieveUpdateDestroyAPIView,)
 from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .serializers import UserProfileSerializer, ProfileDetailSerializer
 
 # Create your views here.
 
@@ -12,7 +12,6 @@ class UserProfileListCreateView(ListCreateAPIView):
         user = self.request.user
         serializer.save(user=user)
 
-
 class UserProfileDetailView(RetrieveUpdateDestroyAPIView):
     queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
+    serializer_class = ProfileDetailSerializer
