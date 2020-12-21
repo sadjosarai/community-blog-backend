@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from django.urls import reverse
 
 # Create your models here.
 from django.contrib.auth.models import User
@@ -124,11 +125,8 @@ class  Lecon(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def get_absolute_url(self):
-        kwargs = {
-            'pk': self.id,
-            'slug': self.slug
-        }
-        return reverse('lecon-pk-slug-detail', kwargs=kwargs)
+        kwargs = {'pk': self.pk}
+        return reverse('blog:detail_lecon', kwargs=kwargs)
 
     def save(self, *args, **kwargs):
         value = self.title

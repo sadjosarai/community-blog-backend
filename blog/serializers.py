@@ -1,6 +1,7 @@
 from rest_framework.serializers import (
         HyperlinkedRelatedField,
-        SerializerMethodField
+        SerializerMethodField,
+        HyperlinkedIdentityField
     )
 from rest_framework import serializers 
 from .models import Post, Tag, Category, Formation, Lecon, Comment, ResponseComment
@@ -33,13 +34,6 @@ class FormationDetailSerializer(serializers.ModelSerializer):
     tag = SerializerMethodField()
     category = SerializerMethodField()
     lecon = SerializerMethodField()
-    summary = HyperlinkedRelatedField(
-        many=True,
-        read_only=True,
-        view_name='blog:detail_lecon',
-        lookup_field = 'pk',
-        lookup_url_kwarg = 'pk'
-    )
     
     class Meta:
         model = Formation
@@ -54,17 +48,18 @@ class FormationDetailSerializer(serializers.ModelSerializer):
                     'tag',
                     'prerequiste',
                     'objectif',
-                    'summary',
                     'lecon',
                 )
 
     def get_lecon(self, obj):
         lecons = obj.summary.all()
         lecons_param = []
-        for i in range(len(lecons)):
+        request = self.context["request"]
+
+        for lecon in lecons :
             item = {
-                "title": lecons[i].title,
-                "link": summary[i]
+                "title" : lecon.title,
+                "link" : request.build_absolute_uri(lecon.get_absolute_url())
             }
             lecons_param.append(item)
         return lecons_param
