@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'sc+@-30a2-fwywx&$r-@imyrrcvrr3mf3w!f+lwi^fu0bb2u-b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -109,7 +109,7 @@ DATABASES = {
 
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
+        'NAME': 'dsc_blog',
         'USER': 'loic',
         'PASSWORD': 'panta12345',
         'HOST': 'localhost',
@@ -160,6 +160,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, ‘static’)
+STATIC_ROOT = 'os.path.join(BASE_DIR, ‘static’)'
 # Activate Django-Heroku.
 django_heroku.settings(locals())
