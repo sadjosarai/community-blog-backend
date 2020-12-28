@@ -1,0 +1,6 @@
+accounts/__pycache__/
+blog/__pycache__/
+DSC_Blog/__pycache__/
+events/__pycache__/
+utils/__pycache__/
+db.sqlite3
